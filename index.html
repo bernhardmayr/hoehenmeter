@@ -49,13 +49,14 @@
   .banner{border:1px solid var(--ocker);background:rgba(217,144,60,.1);border-radius:6px;
           padding:9px 12px;font-size:13.5px;margin-bottom:12px;display:none}
   .banner.zeig{display:block}
-  .werte{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linie);
+  .werte{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--linie);
          border:1px solid var(--linie);border-radius:8px 8px 0 0;overflow:hidden}
-  .wert{background:var(--fels-2);padding:11px 13px}
-  .wert.gesamt{grid-column:1/-1}
-  .wert .lbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--firn-2)}
-  .wert .num{font-family:var(--disp);font-size:40px;line-height:1;font-variant-numeric:tabular-nums;margin-top:1px}
+  .wert{background:var(--fels-2);padding:11px 10px}
+  .wert.gesamt{grid-column:1/-1;padding:11px 13px}
+  .wert .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--firn-2)}
+  .wert .num{font-family:var(--disp);font-size:31px;line-height:1;font-variant-numeric:tabular-nums;margin-top:1px}
   .wert.gesamt .num{color:var(--gletscher);font-size:50px}
+  .wert .num.minus{color:var(--alarm)}
   .wert .hint{font-size:12px;color:var(--firn-2);margin-top:1px}
   .profil{background:var(--fels-2);border:1px solid var(--linie);border-top:none;border-radius:0 0 8px 8px;padding:10px 4px 4px}
   .profil svg{display:block;width:100%;height:auto}
@@ -83,15 +84,43 @@
   .regel.ruht input{visibility:hidden}
   .woche{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .feld{background:var(--fels-2);border:1px solid var(--linie);border-radius:8px;padding:11px 13px}
-  .feld:last-child{grid-column:1/-1}
   .feld label{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--firn-2);margin-bottom:6px}
   .feld input[type=number]{width:100%;background:var(--fels);border:1px solid var(--linie);color:var(--firn);
     border-radius:6px;padding:9px;font-family:var(--disp);font-size:26px;font-variant-numeric:tabular-nums}
   .feld .hint{font-size:12.5px;color:var(--firn-2);margin-top:6px}
-  .bier{display:flex;align-items:center;gap:10px}
-  .bier button{min-width:48px;min-height:44px;font-size:20px}
-  .bier .z{font-family:var(--disp);font-size:32px;min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
-  .bier .z.voll{color:var(--alarm)}
+  .schlaf{background:var(--fels-2);border:1px solid var(--linie);border-radius:8px;padding:13px}
+  .schlaf .kopf{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .schlaf .kopf .t{font-size:15.5px;font-weight:500}
+  .schlaf .dauer{font-family:var(--disp);font-size:34px;line-height:1;font-variant-numeric:tabular-nums;
+    color:var(--latschen);white-space:nowrap;flex:0 0 auto}
+  .schlaf .dauer.knapp{color:var(--ocker)}
+  .schlaf .dauer.kurz{color:var(--alarm)}
+  .schlaf .h{font-size:13px;color:var(--firn-2);margin-top:3px}
+  .schieber{margin-top:12px}
+  .schieber .zeile{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+    font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--firn-2)}
+  .schieber .uhr{font-family:var(--disp);font-size:23px;letter-spacing:.02em;color:var(--firn);
+    text-transform:none;font-variant-numeric:tabular-nums}
+  .schieber input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:34px;
+    background:transparent;margin:0;display:block}
+  .schieber input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--fels-3);border:1px solid var(--linie)}
+  .schieber input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--fels-3);border:1px solid var(--linie)}
+  .schieber input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;
+    width:28px;height:28px;border-radius:50%;background:var(--gletscher);border:none;margin-top:-12px}
+  .schieber input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--gletscher);border:none}
+  .schlaf .leer{font-size:12.5px;color:var(--ocker);margin-top:10px}
+  .negliste{border:1px solid var(--linie);border-radius:8px;overflow:hidden}
+  .neg{display:flex;gap:12px;align-items:center;padding:11px 13px;background:var(--fels-2);border-top:1px solid var(--linie)}
+  .neg:first-child{border-top:none}
+  .neg .txt{flex:1;min-width:0}
+  .neg .t{font-size:15.5px;font-weight:500;line-height:1.3}
+  .neg .h{font-size:12.5px;color:var(--firn-2);margin-top:3px}
+  .neg .zaehler{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+  .neg .zaehler button{min-width:42px;min-height:42px;font-size:19px;padding:0}
+  .neg .z{font-family:var(--disp);font-size:27px;min-width:34px;text-align:center;font-variant-numeric:tabular-nums}
+  .neg.hat{background:var(--fels-3)}
+  .neg.hat .z{color:var(--alarm)}
+  .neg .ab{font-family:var(--disp);font-size:17px;color:var(--alarm);min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
   details{margin-top:12px;border:1px solid var(--linie);border-radius:8px;background:var(--fels-2)}
   summary{padding:13px;cursor:pointer;font-family:var(--disp);font-size:16px;letter-spacing:.1em;text-transform:uppercase;
           -webkit-user-select:none;user-select:none}
@@ -108,10 +137,10 @@
   .status{font-size:13px;color:var(--latschen);min-height:19px;margin-top:8px}
   .status.fehler{color:var(--alarm)}
   @media (min-width:620px){
-    .werte{grid-template-columns:repeat(3,1fr)}
+    .werte{grid-template-columns:repeat(4,1fr)}
     .wert.gesamt{grid-column:auto}
-    .woche{grid-template-columns:repeat(3,1fr)}
-    .feld:last-child{grid-column:auto}
+    .wert .num{font-size:40px}
+    .woche{grid-template-columns:1fr 1fr}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -135,7 +164,9 @@
 
 <div class="werte">
   <div class="wert gesamt"><div class="lbl">Gesamt</div><div class="num" id="sGesamt">–</div>
-    <div class="hint">80 % Kern, 20 % Bonus</div></div>
+    <div class="hint" id="hGesamt">80 % Kern, 20 % Bonus</div></div>
+  <div class="wert"><div class="lbl">Woche</div><div class="num" id="sWoche">–</div>
+    <div class="hint" id="hWoche">gleitend über sieben Tage</div></div>
   <div class="wert"><div class="lbl">Kernregeln</div><div class="num" id="sKern">–</div>
     <div class="hint" id="hKern"></div></div>
   <div class="wert"><div class="lbl">Bonus</div><div class="num" id="sBonus">–</div>
@@ -146,11 +177,34 @@
 </div>
 <div class="streak" id="streak"></div>
 
+<h2 class="sec">Schlaf <span>stärkster Einzelhebel</span></h2>
+<div class="schlaf">
+  <div class="kopf">
+    <div class="txt">
+      <div class="t">Schlafdauer</div>
+      <div class="h" id="schlafHint">Ab sieben Stunden volle Punktzahl.</div>
+    </div>
+    <div class="dauer" id="schlafDauer">–</div>
+  </div>
+  <div class="schieber">
+    <div class="zeile"><span>Schlafanfang</span><span class="uhr" id="vonUhr">22:30</span></div>
+    <input type="range" id="vonRegler" min="1080" max="1680" step="15" value="1350" aria-label="Schlafanfang">
+  </div>
+  <div class="schieber">
+    <div class="zeile"><span>Schlafende</span><span class="uhr" id="bisUhr">06:00</span></div>
+    <input type="range" id="bisRegler" min="180" max="780" step="15" value="360" aria-label="Schlafende">
+  </div>
+  <div class="leer" id="schlafLeer">Noch nicht erfasst – einen der Regler bewegen.</div>
+</div>
+
 <h2 class="sec">Kernregeln <span>80 % des Tages</span></h2>
 <div class="liste" id="kern"></div>
 
 <h2 class="sec">Bonusregeln <span>an schlechten Tagen streichen</span></h2>
 <div class="liste" id="bonus"></div>
+
+<h2 class="sec">Negativpunkte <span id="negLabel">ziehen vom Tag ab</span></h2>
+<div class="negliste" id="negativ"></div>
 
 <h2 class="sec">Wochenwerte <span id="wochelabel"></span></h2>
 <div class="woche">
@@ -163,15 +217,6 @@
     <label for="bauch">Bauchumfang (cm)</label>
     <input type="number" id="bauch" step="0.5" min="50" max="200" inputmode="decimal" enterkeyhint="done">
     <div class="hint" id="bauchHint">Auf Nabelhöhe, alle zwei Wochen genügt.</div>
-  </div>
-  <div class="feld">
-    <label>Bier diese Woche</label>
-    <div class="bier">
-      <button id="bierMinus" aria-label="Bier abziehen">−</button>
-      <div class="z" id="bierZahl">0</div>
-      <button id="bierPlus" aria-label="Bier hinzufügen">+</button>
-    </div>
-    <div class="hint" id="bierHint">Grenze 5.</div>
   </div>
 </div>
 
@@ -198,13 +243,15 @@
 <div class="status" id="status" role="status"></div>
 <div class="fuss">
   Der Tagesscore normiert sich auf die Regeln, die heute gelten: An Tagen ohne Krafttraining verteilt
-  sich dessen Gewicht auf die übrigen Kernregeln. 70 % und mehr ist ein guter Tag – Perfektion ist
+  sich dessen Gewicht auf die übrigen Kernregeln. Negativpunkte werden erst danach abgezogen und können
+  den Tag ins Minus ziehen – ebenso die fortlaufende Wochenwertung, die den Mittelwert der erfassten
+  Tage im gleitenden Sieben-Tage-Fenster zeigt. 70 % und mehr ist ein guter Tag – Perfektion ist
   nicht das Ziel, Wiederholung schon.
 </div>
 
 <script>
 const KERN=[
- {id:'schlaf',t:'Schlaf 22:30–6:00, mindestens 7 Stunden',h:'Der stärkste Hebel: zu wenig Schlaf erhöht Hunger und verschlechtert jede Entscheidung am Folgetag.',w:18},
+ {id:'schlaf',t:'Schlafdauer',h:'Der stärkste Hebel: zu wenig Schlaf erhöht Hunger und verschlechtert jede Entscheidung am Folgetag.',w:18,typ:'dauer'},
  {id:'kraft',t:'Krafttraining',h:'Nur Sonntag, Mittwoch, Freitag gewertet. Entscheidet, ob das Gewicht aus Fett oder Muskel kommt.',w:16,days:[0,3,5]},
  {id:'protein',t:'Protein bei jeder Mahlzeit, Ziel 130–150 g',h:'Sättigung und Muskelerhalt. Ohne Zielwert landet man erfahrungsgemäß bei 80 g.',w:14},
  {id:'nachessen',t:'10–15 Minuten Bewegung nach jeder Mahlzeit',h:'Senkt den Blutzuckeranstieg messbar. Wirkt schon ab wenigen Minuten.',w:12},
@@ -225,8 +272,18 @@ const BONUS=[
  {id:'gewuerze',t:'Zimt und Kurkuma verwendet',h:'Kleiner Effekt. Bei täglichem Zimt Ceylon statt Cassia wegen des Cumaringehalts.',w:5},
  {id:'aromaten',t:'Knoblauch, Zitrone, Ingwer',h:'Für Geschmack und Abwechslung, nicht für die Fettverbrennung.',w:5}
 ];
+// Aus Checklist.xlsx übernommen: die dort als Verzicht geführten Zeilen zählen hier
+// als Einheiten. Jede Einheit zieht ihre Punkte direkt vom Tageswert ab.
+const NEG=[
+ {id:'bier',t:'Bier und Alkohol',h:'Bremst die Fettverbrennung, kostet Tiefschlaf.',w:8},
+ {id:'suess',t:'Süßigkeiten',h:'Je Portion. Der Hunger danach ist das Problem.',w:6},
+ {id:'zwischen',t:'Zwischenmahlzeiten',h:'Je Griff zwischendurch.',w:5},
+ {id:'weissbrot',t:'Weißbrot, Weißmehl',h:'Semmeln, helle Nudeln, heller Reis.',w:4},
+ {id:'wurst',t:'Wurst, verarbeitetes Fleisch',h:'Salz, Nitrit, versteckte Fette.',w:4}
+];
+const SCHLAF_VOLL=420, SCHLAF_NULL=240;   // ab 7 h volle Punktzahl, unter 4 h keine
 const KEY='hoehenmeter.v1';
-let D={version:1,days:{},weeks:{},weights:{},letzteSicherung:null};
+let D={version:2,days:{},weeks:{},weights:{},letzteSicherung:null};
 let cur=new Date();
 let SPEICHER='memory';
 const el=id=>document.getElementById(id);
@@ -251,36 +308,95 @@ function sichern(){
   try{localStorage.setItem(KEY,JSON.stringify(D));}
   catch(e){meldung('Speichern fehlgeschlagen. Sicherung erstellen, bevor du die App schließt.',true);}
 }
+function kwMontag(key){
+  const m=/^(\d{4})-KW(\d{2})$/.exec(key);
+  if(!m)return null;
+  const d=new Date(+m[1],0,4);                      // der 4. Januar liegt immer in KW 1
+  d.setDate(d.getDate()-((d.getDay()+6)%7)+(+m[2]-1)*7);
+  return d;
+}
+// Version 1 zählte Bier je Woche. Der Zähler ist jetzt tagesgenau, damit er den
+// Tageswert drücken kann – der Altbestand landet auf dem Montag seiner Woche.
+function migrieren(o){
+  Object.keys(o.weeks||{}).forEach(k=>{
+    const w=o.weeks[k];
+    if(!w||!w.bier)return;
+    const mo=kwMontag(k);
+    if(mo){
+      const tag=iso(mo);
+      o.days=o.days||{};
+      const t=o.days[tag]=o.days[tag]||{};
+      t.neg=t.neg||{};
+      t.neg.bier=(t.neg.bier||0)+w.bier;
+    }
+    delete w.bier;
+  });
+  return o;
+}
 function uebernehmen(o){
   if(!o||typeof o!=='object')throw new Error('Format');
-  D={version:1,days:o.days||{},weeks:o.weeks||{},weights:o.weights||{},letzteSicherung:o.letzteSicherung||null};
+  o=migrieren(o);
+  D={version:2,days:o.days||{},weeks:o.weeks||{},weights:o.weights||{},letzteSicherung:o.letzteSicherung||null};
 }
 
+// Schlaf: von in Minuten ab Mitternacht des Vortags (1080 = 18:00), bis am Folgetag (360 = 6:00).
+const schlafDaten=s=>(D.days[s]||{}).schlaf||null;
+const schlafDauer=o=>o?(o.bis+1440)-o.von:0;
+const uhr=m=>String(Math.floor((m%1440)/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const stunden=m=>{m=Math.max(0,m);return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')+' h';};
+// Anteil der Schlafpunkte: ab SCHLAF_VOLL voll, darunter linear bis SCHLAF_NULL auf null.
+function schlafAnteil(s){
+  const d=schlafDauer(schlafDaten(s));
+  if(!d)return 0;
+  if(d>=SCHLAF_VOLL)return 1;
+  if(d<=SCHLAF_NULL)return 0;
+  return (d-SCHLAF_NULL)/(SCHLAF_VOLL-SCHLAF_NULL);
+}
+const anteil=(r,s)=>r.typ==='dauer'?schlafAnteil(s):((D.days[s]||{})[r.id]?1:0);
+
 function score(dateStr,list){
-  const d=new Date(dateStr+'T12:00:00'),day=D.days[dateStr]||{};
+  const d=new Date(dateStr+'T12:00:00');
   let max=0,got=0;
-  list.forEach(r=>{if(!gilt(r,d))return;max+=W(r);if(day[r.id])got+=W(r);});
+  list.forEach(r=>{if(!gilt(r,d))return;max+=W(r);got+=W(r)*anteil(r,dateStr);});
   return max?Math.round(got/max*100):0;
 }
-const gesamt=s=>Math.round(score(s,KERN)*0.8+score(s,BONUS)*0.2);
+const basis=s=>Math.round(score(s,KERN)*0.8+score(s,BONUS)*0.2);
+// Negativpunkte werden nach der Normierung abgezogen, damit sie den Tag echt ins Minus ziehen können.
+function abzug(s){
+  const n=(D.days[s]||{}).neg||{};
+  return NEG.reduce((sum,r)=>sum+(n[r.id]||0)*W(r),0);
+}
+const gesamt=s=>basis(s)-abzug(s);
+const erfasst=s=>{const t=D.days[s];return !!t&&Object.keys(t).length>0;};
+
+// Fortlaufende Wochenwertung: Mittel der erfassten Tage im gleitenden Sieben-Tage-Fenster.
+function wocheRollend(bis){
+  let summe=0,n=0;
+  for(let i=0;i<7;i++){const d=new Date(bis);d.setDate(d.getDate()-i);const k=iso(d);
+    if(erfasst(k)){summe+=gesamt(k);n++;}}
+  return {wert:n?Math.round(summe/n):null,tage:n};
+}
 
 function ridge(){
   const pts=[],labels=['So','Mo','Di','Mi','Do','Fr','Sa'];
   for(let i=6;i>=0;i--){const d=new Date(cur);d.setDate(d.getDate()-i);
     pts.push({x:50+(6-i)*100,v:gesamt(iso(d)),l:labels[d.getDay()],heute:iso(d)===iso(cur)});}
-  const y=v=>158-v*1.15;
+  // Skala −50 bis 100: die Talsohle bleibt sichtbar, ohne dass ein Ausreißer alles plattdrückt.
+  const y=v=>158-(Math.max(-50,Math.min(100,v))+50)*.92;
+  const null0=y(0);
   const line=pts.map((p,i)=>(i?'L':'M')+p.x+' '+y(p.v)).join(' ');
   let s='<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
     '<stop offset="0" stop-color="#69B8CC" stop-opacity=".38"/>'+
     '<stop offset="1" stop-color="#69B8CC" stop-opacity="0"/></linearGradient></defs>';
   s+='<line x1="20" y1="'+y(70)+'" x2="680" y2="'+y(70)+'" stroke="#9DB55E" stroke-dasharray="3 5" stroke-width="1" opacity=".55"/>';
-  s+='<text x="20" y="'+(y(70)-6)+'" fill="#9DB55E" font-size="12" opacity=".8">Schneegrenze 70 %</text>';
-  s+='<path d="'+line+' L 650 158 L 50 158 Z" fill="url(#g)"/>';
+  s+='<text x="680" y="'+(y(70)-6)+'" text-anchor="end" fill="#9DB55E" font-size="12" opacity=".8">Schneegrenze 70 %</text>';
+  s+='<path d="'+line+' L 650 '+null0+' L 50 '+null0+' Z" fill="url(#g)"/>';
   s+='<path d="'+line+'" fill="none" stroke="#69B8CC" stroke-width="2.4" stroke-linejoin="round"/>';
-  s+='<line x1="20" y1="158" x2="680" y2="158" stroke="#334750"/>';
+  s+='<line x1="20" y1="'+null0+'" x2="680" y2="'+null0+'" stroke="#334750"/>';
   pts.forEach(p=>{
-    s+='<circle cx="'+p.x+'" cy="'+y(p.v)+'" r="'+(p.heute?5.5:3.6)+'" fill="'+(p.heute?'#D9903C':'#69B8CC')+'"/>';
-    s+='<text x="'+p.x+'" y="'+(y(p.v)-13)+'" text-anchor="middle" fill="#E9F0F1" font-size="14">'+p.v+'</text>';
+    const minus=p.v<0,yy=y(p.v);
+    s+='<circle cx="'+p.x+'" cy="'+yy+'" r="'+(p.heute?5.5:3.6)+'" fill="'+(p.heute?'#D9903C':minus?'#C9634B':'#69B8CC')+'"/>';
+    s+='<text x="'+p.x+'" y="'+(yy-13)+'" text-anchor="middle" fill="'+(minus?'#C9634B':'#E9F0F1')+'" font-size="14">'+p.v+'</text>';
     s+='<text x="'+p.x+'" y="177" text-anchor="middle" fill="'+(p.heute?'#D9903C':'#9DB2B9')+'" font-size="13">'+p.l+'</text>';});
   el('ridge').innerHTML=s;
 }
@@ -293,6 +409,7 @@ function streak(){
 function liste(node,list,day){
   node.innerHTML='';
   list.forEach(r=>{
+    if(r.typ==='dauer')return;   // Schlaf hat einen eigenen Block mit Reglern
     const an=gilt(r,cur),ok=!!(D.days[day]||{})[r.id];
     const lab=document.createElement('label');
     lab.className='regel'+(ok?' aktiv':'')+(an?'':' ruht');
@@ -314,20 +431,76 @@ function liste(node,list,day){
   });
 }
 
+function schlafBlock(day){
+  const o=schlafDaten(day),hat=!!o;
+  const von=hat?o.von:1350,bis=hat?o.bis:360;
+  el('vonRegler').value=von;el('bisRegler').value=bis;
+  el('vonUhr').textContent=uhr(von);el('bisUhr').textContent=uhr(bis);
+  el('schlafLeer').style.display=hat?'none':'block';
+  const d=(bis+1440)-von,box=el('schlafDauer');
+  box.textContent=hat?stunden(d):'–';
+  box.className='dauer'+(!hat||d>=SCHLAF_VOLL?'':d<=SCHLAF_NULL?' kurz':' knapp');
+  const p=Math.round(W(KERN[0])*schlafAnteil(day)*10)/10;
+  el('schlafHint').textContent=hat
+    ?p+' von '+W(KERN[0])+' Punkten'+(d>=SCHLAF_VOLL?' – ab sieben Stunden ist das Maximum erreicht.'
+      :d<=SCHLAF_NULL?' – unter vier Stunden zählt der Schlaf nicht mehr.'
+      :' – volle Punktzahl ab sieben Stunden.')
+    :'Ab sieben Stunden volle Punktzahl, darunter anteilig bis auf null bei vier Stunden.';
+}
+function negListe(day){
+  const node=el('negativ'),n=(D.days[day]||{}).neg||{};
+  node.innerHTML='';
+  NEG.forEach(r=>{
+    const z=n[r.id]||0;
+    const zeile=document.createElement('div');zeile.className='neg'+(z?' hat':'');
+    const txt=document.createElement('div');txt.className='txt';
+    const t=document.createElement('div');t.className='t';t.textContent=r.t;
+    const h=document.createElement('div');h.className='h';h.textContent=r.h;
+    txt.append(t,h);
+    const zae=document.createElement('div');zae.className='zaehler';
+    const minus=document.createElement('button');minus.textContent='−';
+    minus.setAttribute('aria-label',r.t+' abziehen');
+    const zahl=document.createElement('div');zahl.className='z';zahl.textContent=z;
+    const plus=document.createElement('button');plus.textContent='+';
+    plus.setAttribute('aria-label',r.t+' hinzufügen');
+    minus.onclick=()=>negSetzen(day,r.id,-1);plus.onclick=()=>negSetzen(day,r.id,1);
+    zae.append(minus,zahl,plus);
+    const ab=document.createElement('div');ab.className='ab';
+    ab.textContent=z?'−'+(z*W(r)):'−'+W(r)+'/St.';
+    ab.style.opacity=z?1:.45;
+    zeile.append(txt,zae,ab);node.appendChild(zeile);
+  });
+  const a=abzug(day);
+  el('negLabel').textContent=a?'−'+a+' Punkte heute':'ziehen vom Tag ab';
+}
+function negSetzen(day,id,n){
+  const t=D.days[day]=D.days[day]||{};
+  t.neg=t.neg||{};
+  const v=Math.max(0,(t.neg[id]||0)+n);
+  if(v)t.neg[id]=v;else delete t.neg[id];
+  if(!Object.keys(t.neg).length)delete t.neg;
+  if(!Object.keys(t).length)delete D.days[day];
+  sichern();render();
+}
+
 function render(){
   const day=iso(cur),wk=weekKey(cur);
   el('datum').textContent=cur.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
-  el('sGesamt').textContent=gesamt(day)+'%';
+  const g=gesamt(day),a=abzug(day);
+  const num=el('sGesamt');num.textContent=g+'%';num.className='num'+(g<0?' minus':'');
+  el('hGesamt').textContent=a?'80 % Kern, 20 % Bonus, −'+a+' aus Negativpunkten':'80 % Kern, 20 % Bonus';
+  const wr=wocheRollend(cur),wn=el('sWoche');
+  wn.textContent=wr.wert===null?'–':wr.wert+'%';
+  wn.className='num'+(wr.wert!==null&&wr.wert<0?' minus':'');
+  el('hWoche').textContent=wr.tage?'gleitend, '+wr.tage+' von 7 Tagen':'Noch keine Tage erfasst';
   el('sKern').textContent=score(day,KERN)+'%';
   el('sBonus').textContent=score(day,BONUS)+'%';
   el('hKern').textContent=gilt(KERN[1],cur)?'Krafttag':'ohne Krafttraining';
-  liste(el('kern'),KERN,day);liste(el('bonus'),BONUS,day);
+  schlafBlock(day);
+  liste(el('kern'),KERN,day);liste(el('bonus'),BONUS,day);negListe(day);
   el('wochelabel').textContent=wk;
   const w=D.weeks[wk]||{};
   el('gewicht').value=w.gewicht??'';el('bauch').value=w.bauch??'';
-  const b=w.bier||0;el('bierZahl').textContent=b;el('bierZahl').className='z'+(b>=5?' voll':'');
-  el('bierHint').textContent=b>=5?'Grenze erreicht. Alkohol bremst die Fettoxidation und kostet Tiefschlaf.'
-    :'Grenze 5. Besser auf zwei Gelegenheiten bündeln, nicht am Abend vor einem Krafttag.';
   trendHints(wk);ridge();streak();sicherungsHinweis();
 }
 function trendHints(wk){
@@ -342,8 +515,9 @@ function trendHints(wk){
 }
 function gewichtung(){
   const box=el('gewichtung');
-  box.innerHTML='<p class="erklaer">Punkte je Regel. Der Score rechnet immer auf 100 % um, die Zahlen müssen sich also nicht summieren.</p>';
-  [['Kern',KERN],['Bonus',BONUS]].forEach(function(paar){
+  box.innerHTML='<p class="erklaer">Punkte je Regel. Kern und Bonus rechnen immer auf 100 % um, die Zahlen müssen sich also nicht summieren. '+
+    'Negativpunkte sind absolute Abzüge je Einheit und werden erst danach abgezogen.</p>';
+  [['Kern',KERN],['Bonus',BONUS],['Negativ – Abzug je Einheit',NEG]].forEach(function(paar){
     const h=document.createElement('div');
     h.style.cssText='font-family:var(--disp);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--ocker);margin:12px 0 2px';
     h.textContent=paar[0];box.appendChild(h);
@@ -373,11 +547,17 @@ function exportJson(){
 }
 function exportCsv(){
   const alle=Object.keys(D.days).sort();
-  const kopf=['Datum','Gesamt','Kern','Bonus'].concat(KERN.map(r=>r.id),BONUS.map(r=>r.id),['Gewicht','Bauchumfang','Bier_Woche']);
+  const kopf=['Datum','Gesamt','Woche_fortlaufend','Basis','Kern','Bonus','Abzug',
+    'Schlaf_von','Schlaf_bis','Schlaf_min']
+    .concat(KERN.filter(r=>r.typ!=='dauer').map(r=>r.id),BONUS.map(r=>r.id),
+      NEG.map(r=>'neg_'+r.id),['Gewicht','Bauchumfang']);
   const zeilen=alle.map(k=>{
-    const t=D.days[k]||{},w=D.weeks[weekKey(new Date(k+'T12:00:00'))]||{};
-    return [k,gesamt(k),score(k,KERN),score(k,BONUS)]
-      .concat(KERN.map(r=>t[r.id]?1:0),BONUS.map(r=>t[r.id]?1:0),[w.gewicht??'',w.bauch??'',w.bier??'']).join(';');});
+    const t=D.days[k]||{},n=t.neg||{},s=t.schlaf||null;
+    const w=D.weeks[weekKey(new Date(k+'T12:00:00'))]||{};
+    return [k,gesamt(k),wocheRollend(new Date(k+'T12:00:00')).wert??'',basis(k),score(k,KERN),score(k,BONUS),abzug(k),
+      s?uhr(s.von):'',s?uhr(s.bis):'',s?schlafDauer(s):'']
+      .concat(KERN.filter(r=>r.typ!=='dauer').map(r=>t[r.id]?1:0),BONUS.map(r=>t[r.id]?1:0),
+        NEG.map(r=>n[r.id]||0),[w.gewicht??'',w.bauch??'']).join(';');});
   datei('hoehenmeter-verlauf-'+iso(new Date())+'.csv','\ufeff'+[kopf.join(';')].concat(zeilen).join('\r\n'),'text/csv');
   meldung(alle.length?'CSV mit '+alle.length+' Tagen erstellt.':'CSV erstellt – noch keine Tage erfasst.');
 }
@@ -416,10 +596,34 @@ function sicherungsHinweis(){
 el('prev').onclick=()=>{cur.setDate(cur.getDate()-1);render();};
 el('next').onclick=()=>{cur.setDate(cur.getDate()+1);render();};
 el('heute').onclick=()=>{cur=new Date();render();};
-el('bierPlus').onclick=()=>bier(1);
-el('bierMinus').onclick=()=>bier(-1);
-function bier(n){const wk=weekKey(cur);D.weeks[wk]=D.weeks[wk]||{};
-  D.weeks[wk].bier=Math.max(0,(D.weeks[wk].bier||0)+n);sichern();render();}
+// Die Reglerbereiche überlappen (Anfang bis 04:00, Ende ab 03:00), sonst ließen sich späte
+// Nächte nicht abbilden. Beim Kreuzen schiebt der jeweils andere Regler nach, damit nie eine
+// negative Dauer entsteht.
+const MIN_DAUER=30;
+function entkreuzen(bewegt){
+  const v=el('vonRegler'),b=el('bisRegler');
+  if((+b.value+1440)-(+v.value)>=MIN_DAUER)return;
+  if(bewegt==='von')b.value=Math.min(+b.max,+v.value-1440+MIN_DAUER);
+  else v.value=Math.max(+v.min,+b.value+1440-MIN_DAUER);
+}
+function schlafAnzeige(bewegt){
+  entkreuzen(bewegt);
+  const von=+el('vonRegler').value,bis=+el('bisRegler').value,d=(bis+1440)-von;
+  el('vonUhr').textContent=uhr(von);el('bisUhr').textContent=uhr(bis);
+  const box=el('schlafDauer');box.textContent=stunden(d);
+  box.className='dauer'+(d>=SCHLAF_VOLL?'':d<=SCHLAF_NULL?' kurz':' knapp');
+}
+function schlafRegler(bewegt){
+  entkreuzen(bewegt);
+  const t=D.days[iso(cur)]=D.days[iso(cur)]||{};
+  t.schlaf={von:+el('vonRegler').value,bis:+el('bisRegler').value};
+  sichern();render();
+}
+// input für die Live-Anzeige während des Ziehens, change für den gespeicherten Stand.
+[['vonRegler','von'],['bisRegler','bis']].forEach(([id,seite])=>{
+  el(id).addEventListener('input',()=>schlafAnzeige(seite));
+  el(id).addEventListener('change',()=>schlafRegler(seite));
+});
 function feld(id,f){el(id).addEventListener('change',()=>{
   const wk=weekKey(cur);D.weeks[wk]=D.weeks[wk]||{};
   const v=parseFloat(el(id).value);
@@ -432,7 +636,7 @@ el('importBtn').onclick=()=>el('importFile').click();
 el('importFile').onchange=e=>{const f=e.target.files[0];if(f)importieren(f);e.target.value='';};
 el('reset').onclick=()=>{
   if(!confirm('Wirklich alle Einträge und Gewichtungen löschen? Vorher sichern, falls du sie behalten willst.'))return;
-  D={version:1,days:{},weeks:{},weights:{},letzteSicherung:null};sichern();render();gewichtung();
+  D={version:2,days:{},weeks:{},weights:{},letzteSicherung:null};sichern();render();gewichtung();
   meldung('Alle Daten gelöscht.');};
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT')return;
