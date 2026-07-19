@@ -281,7 +281,7 @@ const NEG=[
  {id:'weissbrot',t:'Weißbrot, Weißmehl',h:'Semmeln, helle Nudeln, heller Reis.',w:4},
  {id:'wurst',t:'Wurst, verarbeitetes Fleisch',h:'Salz, Nitrit, versteckte Fette.',w:4}
 ];
-const SCHLAF_VOLL=420, SCHLAF_NULL=240;   // ab 7 h volle Punktzahl, unter 4 h keine
+const SCHLAF_VOLL=420, SCHLAF_NULL=360;   // ab 7 h volle Punktzahl, ab 6 h abwärts keine
 const KEY='hoehenmeter.v1';
 let D={version:2,days:{},weeks:{},weights:{},letzteSicherung:null};
 let cur=new Date();
@@ -443,9 +443,9 @@ function schlafBlock(day){
   const p=Math.round(W(KERN[0])*schlafAnteil(day)*10)/10;
   el('schlafHint').textContent=hat
     ?p+' von '+W(KERN[0])+' Punkten'+(d>=SCHLAF_VOLL?' – ab sieben Stunden ist das Maximum erreicht.'
-      :d<=SCHLAF_NULL?' – unter vier Stunden zählt der Schlaf nicht mehr.'
+      :d<=SCHLAF_NULL?' – sechs Stunden und weniger zählen nicht.'
       :' – volle Punktzahl ab sieben Stunden.')
-    :'Ab sieben Stunden volle Punktzahl, darunter anteilig bis auf null bei vier Stunden.';
+    :'Ab sieben Stunden volle Punktzahl, unter sechs Stunden keine.';
 }
 function negListe(day){
   const node=el('negativ'),n=(D.days[day]||{}).neg||{};

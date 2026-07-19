@@ -43,8 +43,9 @@ in `index.html`. Gewichte lassen sich auch zur Laufzeit in der App ändern.
 ## Bewertung
 
 **Schlaf** wird über zwei Regler erfasst, nicht als Häkchen. Ab sieben Stunden gibt es die volle
-Punktzahl, darunter sinkt sie linear bis auf null bei vier Stunden – sechs Stunden ergeben also
-zwei Drittel. Die Regler dürfen sich nicht kreuzen; der jeweils andere schiebt nach.
+Punktzahl, darunter sinkt sie linear bis auf null bei sechs Stunden – 6:30 ergibt also die Hälfte,
+sechs Stunden und weniger gar nichts. Die Regler dürfen sich nicht kreuzen; der jeweils andere
+schiebt nach.
 
 **Negativpunkte** stammen aus `Checklist.xlsx` – die dort als Verzicht geführten Zeilen (Alkohol,
 Süßigkeiten, Zwischenmahlzeiten, Weißmehl, Wurst). Sie werden je Tag als Einheiten gezählt und
