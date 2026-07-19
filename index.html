@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Höhenmeter</title>
+<meta name="description" content="Täglicher Regel-Tracker mit gewichteter Bewertung.">
+<meta name="theme-color" content="#141E24">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Höhenmeter">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.png" sizes="32x32">
+<style>
+  :root{
+    --fels:#141E24;--fels-2:#1C2A31;--fels-3:#25373F;--linie:#334750;
+    --firn:#E9F0F1;--firn-2:#9DB2B9;--gletscher:#69B8CC;--latschen:#9DB55E;
+    --ocker:#D9903C;--alarm:#C9634B;
+    --disp:'Barlow Condensed','Avenir Next Condensed','Arial Narrow',system-ui,sans-serif;
+    --body:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{background:var(--fels);height:100%}
+  body{
+    margin:0;font-family:var(--body);color:var(--firn);background:var(--fels);
+    background-image:radial-gradient(130% 60% at 50% 0%, #1E3037 0%, var(--fels) 65%);
+    background-attachment:fixed;
+    padding:calc(env(safe-area-inset-top) + 14px) calc(env(safe-area-inset-right) + 14px)
+            calc(env(safe-area-inset-bottom) + 40px) calc(env(safe-area-inset-left) + 14px);
+    max-width:820px;margin:0 auto;line-height:1.45;
+    -webkit-text-size-adjust:100%;overscroll-behavior-y:contain;
+  }
+  h1,h2{font-family:var(--disp);margin:0;font-weight:600;letter-spacing:.02em}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+       border-bottom:1px solid var(--linie);padding-bottom:12px;margin-bottom:14px}
+  .top h1{font-size:30px;line-height:1;text-transform:uppercase;letter-spacing:.07em}
+  .top .sub{font-size:11px;color:var(--firn-2);letter-spacing:.14em;text-transform:uppercase}
+  .nav{display:flex;align-items:center;gap:4px;margin-left:auto}
+  .nav button{min-width:44px;min-height:44px;font-size:16px}
+  .datum{font-family:var(--disp);font-size:19px;min-width:128px;text-align:center}
+  button{background:var(--fels-3);color:var(--firn);border:1px solid var(--linie);border-radius:6px;
+         padding:9px 13px;font-family:var(--body);font-size:15px;cursor:pointer;
+         -webkit-user-select:none;user-select:none;touch-action:manipulation}
+  button:active{background:var(--linie)}
+  button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--gletscher);outline-offset:2px}
+  .banner{border:1px solid var(--ocker);background:rgba(217,144,60,.1);border-radius:6px;
+          padding:9px 12px;font-size:13.5px;margin-bottom:12px;display:none}
+  .banner.zeig{display:block}
+  .werte{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linie);
+         border:1px solid var(--linie);border-radius:8px 8px 0 0;overflow:hidden}
+  .wert{background:var(--fels-2);padding:11px 13px}
+  .wert.gesamt{grid-column:1/-1}
+  .wert .lbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--firn-2)}
+  .wert .num{font-family:var(--disp);font-size:40px;line-height:1;font-variant-numeric:tabular-nums;margin-top:1px}
+  .wert.gesamt .num{color:var(--gletscher);font-size:50px}
+  .wert .hint{font-size:12px;color:var(--firn-2);margin-top:1px}
+  .profil{background:var(--fels-2);border:1px solid var(--linie);border-top:none;border-radius:0 0 8px 8px;padding:10px 4px 4px}
+  .profil svg{display:block;width:100%;height:auto}
+  .streak{font-size:11.5px;color:var(--firn-2);letter-spacing:.1em;text-transform:uppercase;text-align:right;padding:8px 4px 0}
+  h2.sec{font-size:14px;text-transform:uppercase;letter-spacing:.18em;color:var(--ocker);
+         margin:26px 0 5px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  h2.sec span{font-family:var(--body);font-size:11.5px;letter-spacing:.02em;color:var(--firn-2);text-transform:none;text-align:right;flex:1}
+  .liste{border:1px solid var(--linie);border-radius:8px;overflow:hidden}
+  .regel{display:flex;gap:13px;align-items:flex-start;padding:13px;background:var(--fels-2);
+         border-top:1px solid var(--linie);cursor:pointer;
+         -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  .regel:first-child{border-top:none}
+  .regel:active{background:var(--fels-3)}
+  .regel input{appearance:none;-webkit-appearance:none;width:24px;height:24px;flex:0 0 24px;margin:0;
+    border:1.5px solid var(--firn-2);border-radius:4px;background:transparent;position:relative}
+  .regel input:checked{background:var(--latschen);border-color:var(--latschen)}
+  .regel input:checked::after{content:"";position:absolute;left:7.5px;top:2.5px;width:6px;height:12px;
+    border:solid var(--fels);border-width:0 3px 3px 0;transform:rotate(42deg)}
+  .regel .txt{flex:1;min-width:0}
+  .regel .t{font-size:15.5px;font-weight:500;line-height:1.3}
+  .regel .h{font-size:13px;color:var(--firn-2);margin-top:3px}
+  .regel .pts{font-family:var(--disp);font-size:18px;color:var(--firn-2);font-variant-numeric:tabular-nums;padding-left:2px}
+  .regel.aktiv .pts{color:var(--latschen)}
+  .regel.ruht{opacity:.42}
+  .regel.ruht input{visibility:hidden}
+  .woche{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .feld{background:var(--fels-2);border:1px solid var(--linie);border-radius:8px;padding:11px 13px}
+  .feld:last-child{grid-column:1/-1}
+  .feld label{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--firn-2);margin-bottom:6px}
+  .feld input[type=number]{width:100%;background:var(--fels);border:1px solid var(--linie);color:var(--firn);
+    border-radius:6px;padding:9px;font-family:var(--disp);font-size:26px;font-variant-numeric:tabular-nums}
+  .feld .hint{font-size:12.5px;color:var(--firn-2);margin-top:6px}
+  .bier{display:flex;align-items:center;gap:10px}
+  .bier button{min-width:48px;min-height:44px;font-size:20px}
+  .bier .z{font-family:var(--disp);font-size:32px;min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
+  .bier .z.voll{color:var(--alarm)}
+  details{margin-top:12px;border:1px solid var(--linie);border-radius:8px;background:var(--fels-2)}
+  summary{padding:13px;cursor:pointer;font-family:var(--disp);font-size:16px;letter-spacing:.1em;text-transform:uppercase;
+          -webkit-user-select:none;user-select:none}
+  .inhalt{padding:0 13px 14px}
+  .gewzeile{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14.5px}
+  .gewzeile span{flex:1}
+  .gewzeile input{width:70px;background:var(--fels);border:1px solid var(--linie);color:var(--firn);
+    border-radius:6px;padding:8px;font-size:16px;font-variant-numeric:tabular-nums;text-align:center}
+  .knopfreihe{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .knopfreihe button{flex:1 1 auto;min-height:44px}
+  .erklaer{font-size:13px;color:var(--firn-2);margin:0 0 10px}
+  .gefahr{border-color:var(--alarm);color:var(--alarm)}
+  .fuss{font-size:12.5px;color:var(--firn-2);margin-top:20px;border-top:1px solid var(--linie);padding-top:12px}
+  .status{font-size:13px;color:var(--latschen);min-height:19px;margin-top:8px}
+  .status.fehler{color:var(--alarm)}
+  @media (min-width:620px){
+    .werte{grid-template-columns:repeat(3,1fr)}
+    .wert.gesamt{grid-column:auto}
+    .woche{grid-template-columns:repeat(3,1fr)}
+    .feld:last-child{grid-column:auto}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div>
+    <h1>Höhenmeter</h1>
+    <div class="sub">gewichtet nach Wirksamkeit</div>
+  </div>
+  <div class="nav">
+    <button id="prev" aria-label="Vorheriger Tag">&#9664;</button>
+    <div class="datum" id="datum">–</div>
+    <button id="next" aria-label="Nächster Tag">&#9654;</button>
+    <button id="heute">Heute</button>
+  </div>
+</div>
+
+<div class="banner" id="banner"></div>
+
+<div class="werte">
+  <div class="wert gesamt"><div class="lbl">Gesamt</div><div class="num" id="sGesamt">–</div>
+    <div class="hint">80 % Kern, 20 % Bonus</div></div>
+  <div class="wert"><div class="lbl">Kernregeln</div><div class="num" id="sKern">–</div>
+    <div class="hint" id="hKern"></div></div>
+  <div class="wert"><div class="lbl">Bonus</div><div class="num" id="sBonus">–</div>
+    <div class="hint">Kür, kein Muss</div></div>
+</div>
+<div class="profil">
+  <svg id="ridge" viewBox="0 0 700 190" role="img" aria-label="Höhenprofil der letzten sieben Tage"></svg>
+</div>
+<div class="streak" id="streak"></div>
+
+<h2 class="sec">Kernregeln <span>80 % des Tages</span></h2>
+<div class="liste" id="kern"></div>
+
+<h2 class="sec">Bonusregeln <span>an schlechten Tagen streichen</span></h2>
+<div class="liste" id="bonus"></div>
+
+<h2 class="sec">Wochenwerte <span id="wochelabel"></span></h2>
+<div class="woche">
+  <div class="feld">
+    <label for="gewicht">Gewicht (kg)</label>
+    <input type="number" id="gewicht" step="0.1" min="30" max="250" inputmode="decimal" enterkeyhint="done">
+    <div class="hint" id="gewichtHint">Einmal pro Woche, nüchtern nach dem Aufstehen.</div>
+  </div>
+  <div class="feld">
+    <label for="bauch">Bauchumfang (cm)</label>
+    <input type="number" id="bauch" step="0.5" min="50" max="200" inputmode="decimal" enterkeyhint="done">
+    <div class="hint" id="bauchHint">Auf Nabelhöhe, alle zwei Wochen genügt.</div>
+  </div>
+  <div class="feld">
+    <label>Bier diese Woche</label>
+    <div class="bier">
+      <button id="bierMinus" aria-label="Bier abziehen">−</button>
+      <div class="z" id="bierZahl">0</div>
+      <button id="bierPlus" aria-label="Bier hinzufügen">+</button>
+    </div>
+    <div class="hint" id="bierHint">Grenze 5.</div>
+  </div>
+</div>
+
+<details>
+  <summary>Daten sichern</summary>
+  <div class="inhalt">
+    <p class="erklaer" id="speicherort"></p>
+    <div class="knopfreihe">
+      <button id="exportJson">Sicherung teilen (.json)</button>
+      <button id="importBtn">Sicherung einlesen</button>
+      <button id="exportCsv">Verlauf als CSV</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+    <p class="erklaer" id="letzteSicherung"></p>
+    <div class="knopfreihe"><button id="reset" class="gefahr">Alle Daten löschen</button></div>
+  </div>
+</details>
+
+<details>
+  <summary>Gewichtung anpassen</summary>
+  <div class="inhalt" id="gewichtung"></div>
+</details>
+
+<div class="status" id="status" role="status"></div>
+<div class="fuss">
+  Der Tagesscore normiert sich auf die Regeln, die heute gelten: An Tagen ohne Krafttraining verteilt
+  sich dessen Gewicht auf die übrigen Kernregeln. 70 % und mehr ist ein guter Tag – Perfektion ist
+  nicht das Ziel, Wiederholung schon.
+</div>
+
+<script>
+const KERN=[
+ {id:'schlaf',t:'Schlaf 22:30–6:00, mindestens 7 Stunden',h:'Der stärkste Hebel: zu wenig Schlaf erhöht Hunger und verschlechtert jede Entscheidung am Folgetag.',w:18},
+ {id:'kraft',t:'Krafttraining',h:'Nur Sonntag, Mittwoch, Freitag gewertet. Entscheidet, ob das Gewicht aus Fett oder Muskel kommt.',w:16,days:[0,3,5]},
+ {id:'protein',t:'Protein bei jeder Mahlzeit, Ziel 130–150 g',h:'Sättigung und Muskelerhalt. Ohne Zielwert landet man erfahrungsgemäß bei 80 g.',w:14},
+ {id:'nachessen',t:'10–15 Minuten Bewegung nach jeder Mahlzeit',h:'Senkt den Blutzuckeranstieg messbar. Wirkt schon ab wenigen Minuten.',w:12},
+ {id:'ausdauer',t:'Ausdauer: Walken, Berg, Rad oder Schwimmen',h:'Ziel 5× pro Woche. Ein Tag mit nur lockerem Gehen gehört bewusst dazu.',w:12},
+ {id:'gemuese',t:'400 g Gemüse und Salat',h:'Volumen, Sättigung, Ballaststoffe. In den ersten Wochen langsam steigern.',w:10},
+ {id:'fenster',t:'Essensfenster 7–18 Uhr eingehalten',h:'Begrenzt vor allem das Abendessen nach dem Abendessen.',w:10},
+ {id:'portion',t:'Nüsse und Samen: maximal 30 g',h:'Die einzige Mengenregel. Rund 600 kcal pro 100 g – hier kippt eine gute Ernährung am leisesten.',w:8}
+];
+const BONUS=[
+ {id:'licht',t:'Morgens einige Minuten ins Tageslicht',h:'Stabilisiert den Schlafrhythmus. Der Effekt zeigt sich abends beim Einschlafen.',w:14},
+ {id:'gymnastik',t:'Morgengymnastik',h:'Beweglichkeit und ein sauberer Start in den Tag.',w:14},
+ {id:'wasser',t:'3 Liter Wasser und Tee',h:'Vor allem am Morgen. Pflicht, sobald Flohsamen dazukommen.',w:12},
+ {id:'langsam',t:'Langsam essen, mehr als 20× kauen',h:'Sättigung braucht etwa 20 Minuten, bis sie ankommt.',w:12},
+ {id:'handy',t:'Erste Stunde ohne Handy',h:'Schützt die Regeln danach: kein Stressstart, keine fremde Agenda.',w:10},
+ {id:'obst',t:'Eine bis zwei Obsteinheiten',h:'Ganze Frucht statt Saft.',w:10},
+ {id:'samen',t:'Chia, Leinsamen oder Flohsamen',h:'Über drei bis vier Wochen steigern, sonst rebelliert der Darm.',w:10},
+ {id:'fruehstueck',t:'Frühstück erst 60 Minuten nach dem Aufstehen',h:'Neutral für den Stoffwechsel, hilfreich für das Essensfenster.',w:8},
+ {id:'gewuerze',t:'Zimt und Kurkuma verwendet',h:'Kleiner Effekt. Bei täglichem Zimt Ceylon statt Cassia wegen des Cumaringehalts.',w:5},
+ {id:'aromaten',t:'Knoblauch, Zitrone, Ingwer',h:'Für Geschmack und Abwechslung, nicht für die Fettverbrennung.',w:5}
+];
+const KEY='hoehenmeter.v1';
+let D={version:1,days:{},weeks:{},weights:{},letzteSicherung:null};
+let cur=new Date();
+let SPEICHER='memory';
+const el=id=>document.getElementById(id);
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function weekKey(d){const t=new Date(d);t.setHours(0,0,0,0);t.setDate(t.getDate()+3-((t.getDay()+6)%7));
+  const j=new Date(t.getFullYear(),0,4);
+  return t.getFullYear()+'-KW'+String(1+Math.round(((t-j)/864e5-3+((j.getDay()+6)%7))/7)).padStart(2,'0');}
+const W=r=>D.weights[r.id]??r.w;
+const gilt=(r,d)=>!r.days||r.days.includes(d.getDay());
+function meldung(m,fehler){const s=el('status');s.textContent=m||'';s.className='status'+(fehler?' fehler':'');
+  if(m&&!fehler)setTimeout(()=>{if(s.textContent===m)s.textContent='';},4000);}
+
+function pruefeLocalStorage(){try{localStorage.setItem('__t','1');localStorage.removeItem('__t');return true;}catch(e){return false;}}
+function speicherWaehlen(){SPEICHER=pruefeLocalStorage()?'local':'memory';}
+function laden(){
+  if(SPEICHER!=='local')return;
+  try{const r=localStorage.getItem(KEY);if(r)uebernehmen(JSON.parse(r));}
+  catch(e){meldung('Gespeicherte Daten unlesbar. Lies eine Sicherung ein.',true);}
+}
+function sichern(){
+  if(SPEICHER!=='local')return;
+  try{localStorage.setItem(KEY,JSON.stringify(D));}
+  catch(e){meldung('Speichern fehlgeschlagen. Sicherung erstellen, bevor du die App schließt.',true);}
+}
+function uebernehmen(o){
+  if(!o||typeof o!=='object')throw new Error('Format');
+  D={version:1,days:o.days||{},weeks:o.weeks||{},weights:o.weights||{},letzteSicherung:o.letzteSicherung||null};
+}
+
+function score(dateStr,list){
+  const d=new Date(dateStr+'T12:00:00'),day=D.days[dateStr]||{};
+  let max=0,got=0;
+  list.forEach(r=>{if(!gilt(r,d))return;max+=W(r);if(day[r.id])got+=W(r);});
+  return max?Math.round(got/max*100):0;
+}
+const gesamt=s=>Math.round(score(s,KERN)*0.8+score(s,BONUS)*0.2);
+
+function ridge(){
+  const pts=[],labels=['So','Mo','Di','Mi','Do','Fr','Sa'];
+  for(let i=6;i>=0;i--){const d=new Date(cur);d.setDate(d.getDate()-i);
+    pts.push({x:50+(6-i)*100,v:gesamt(iso(d)),l:labels[d.getDay()],heute:iso(d)===iso(cur)});}
+  const y=v=>158-v*1.15;
+  const line=pts.map((p,i)=>(i?'L':'M')+p.x+' '+y(p.v)).join(' ');
+  let s='<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0" stop-color="#69B8CC" stop-opacity=".38"/>'+
+    '<stop offset="1" stop-color="#69B8CC" stop-opacity="0"/></linearGradient></defs>';
+  s+='<line x1="20" y1="'+y(70)+'" x2="680" y2="'+y(70)+'" stroke="#9DB55E" stroke-dasharray="3 5" stroke-width="1" opacity=".55"/>';
+  s+='<text x="20" y="'+(y(70)-6)+'" fill="#9DB55E" font-size="12" opacity=".8">Schneegrenze 70 %</text>';
+  s+='<path d="'+line+' L 650 158 L 50 158 Z" fill="url(#g)"/>';
+  s+='<path d="'+line+'" fill="none" stroke="#69B8CC" stroke-width="2.4" stroke-linejoin="round"/>';
+  s+='<line x1="20" y1="158" x2="680" y2="158" stroke="#334750"/>';
+  pts.forEach(p=>{
+    s+='<circle cx="'+p.x+'" cy="'+y(p.v)+'" r="'+(p.heute?5.5:3.6)+'" fill="'+(p.heute?'#D9903C':'#69B8CC')+'"/>';
+    s+='<text x="'+p.x+'" y="'+(y(p.v)-13)+'" text-anchor="middle" fill="#E9F0F1" font-size="14">'+p.v+'</text>';
+    s+='<text x="'+p.x+'" y="177" text-anchor="middle" fill="'+(p.heute?'#D9903C':'#9DB2B9')+'" font-size="13">'+p.l+'</text>';});
+  el('ridge').innerHTML=s;
+}
+function streak(){
+  let n=0;const d=new Date(cur);
+  for(let i=0;i<400;i++){const k=iso(d);if(!D.days[k]||gesamt(k)<70)break;n++;d.setDate(d.getDate()-1);}
+  el('streak').textContent=n?'Serie: '+n+' Tag'+(n>1?'e':'')+' über 70 %':'Noch keine Serie über 70 %';
+}
+
+function liste(node,list,day){
+  node.innerHTML='';
+  list.forEach(r=>{
+    const an=gilt(r,cur),ok=!!(D.days[day]||{})[r.id];
+    const lab=document.createElement('label');
+    lab.className='regel'+(ok?' aktiv':'')+(an?'':' ruht');
+    const inp=document.createElement('input');
+    inp.type='checkbox';inp.checked=ok;inp.disabled=!an;
+    const txt=document.createElement('div');txt.className='txt';
+    const t=document.createElement('div');t.className='t';
+    t.textContent=r.t+(an?'':' – heute kein Trainingstag');
+    const h=document.createElement('div');h.className='h';h.textContent=r.h;
+    txt.append(t,h);
+    const p=document.createElement('div');p.className='pts';p.textContent=W(r);
+    lab.append(inp,txt,p);
+    inp.addEventListener('change',e=>{
+      D.days[day]=D.days[day]||{};
+      if(e.target.checked)D.days[day][r.id]=1;else delete D.days[day][r.id];
+      if(!Object.keys(D.days[day]).length)delete D.days[day];
+      sichern();render();});
+    node.appendChild(lab);
+  });
+}
+
+function render(){
+  const day=iso(cur),wk=weekKey(cur);
+  el('datum').textContent=cur.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+  el('sGesamt').textContent=gesamt(day)+'%';
+  el('sKern').textContent=score(day,KERN)+'%';
+  el('sBonus').textContent=score(day,BONUS)+'%';
+  el('hKern').textContent=gilt(KERN[1],cur)?'Krafttag':'ohne Krafttraining';
+  liste(el('kern'),KERN,day);liste(el('bonus'),BONUS,day);
+  el('wochelabel').textContent=wk;
+  const w=D.weeks[wk]||{};
+  el('gewicht').value=w.gewicht??'';el('bauch').value=w.bauch??'';
+  const b=w.bier||0;el('bierZahl').textContent=b;el('bierZahl').className='z'+(b>=5?' voll':'');
+  el('bierHint').textContent=b>=5?'Grenze erreicht. Alkohol bremst die Fettoxidation und kostet Tiefschlaf.'
+    :'Grenze 5. Besser auf zwei Gelegenheiten bündeln, nicht am Abend vor einem Krafttag.';
+  trendHints(wk);ridge();streak();sicherungsHinweis();
+}
+function trendHints(wk){
+  const ks=Object.keys(D.weeks).sort(),i=ks.indexOf(wk);
+  const diff=(f,txt,unit)=>{
+    if(i<1)return txt;
+    for(let j=i-1;j>=0;j--){const v=D.weeks[ks[j]]&&D.weeks[ks[j]][f],n=D.weeks[wk]&&D.weeks[wk][f];
+      if(v!=null&&n!=null){const d=(n-v).toFixed(1);return (d>0?'+':'')+d+' '+unit+' seit '+ks[j]+'. '+txt;}}
+    return txt;};
+  el('gewichtHint').textContent=diff('gewicht','Einmal pro Woche, nüchtern nach dem Aufstehen. Zielrate 0,5–0,75 kg pro Woche.','kg');
+  el('bauchHint').textContent=diff('bauch','Auf Nabelhöhe, alle zwei Wochen genügt – reagiert oft früher als die Waage.','cm');
+}
+function gewichtung(){
+  const box=el('gewichtung');
+  box.innerHTML='<p class="erklaer">Punkte je Regel. Der Score rechnet immer auf 100 % um, die Zahlen müssen sich also nicht summieren.</p>';
+  [['Kern',KERN],['Bonus',BONUS]].forEach(function(paar){
+    const h=document.createElement('div');
+    h.style.cssText='font-family:var(--disp);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--ocker);margin:12px 0 2px';
+    h.textContent=paar[0];box.appendChild(h);
+    paar[1].forEach(r=>{const z=document.createElement('div');z.className='gewzeile';
+      const s=document.createElement('span');s.textContent=r.t;
+      const inp=document.createElement('input');inp.type='number';inp.min=0;inp.max=50;inp.inputMode='numeric';inp.value=W(r);
+      inp.addEventListener('change',()=>{D.weights[r.id]=Math.max(0,+inp.value||0);sichern();render();});
+      z.append(s,inp);box.appendChild(z);});
+  });
+}
+
+function datei(name,inhalt,typ){
+  const blob=new Blob([inhalt],{type:typ});
+  const f=new File([blob],name,{type:typ});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){
+    navigator.share({files:[f],title:name}).catch(()=>{});
+    return;
+  }
+  const u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+function exportJson(){
+  D.letzteSicherung=new Date().toISOString();sichern();
+  datei('hoehenmeter-sicherung-'+iso(new Date())+'.json',JSON.stringify(D,null,2),'application/json');
+  meldung('Sicherung erstellt – in „Dateien" sichern.');sicherungsHinweis();
+}
+function exportCsv(){
+  const alle=Object.keys(D.days).sort();
+  const kopf=['Datum','Gesamt','Kern','Bonus'].concat(KERN.map(r=>r.id),BONUS.map(r=>r.id),['Gewicht','Bauchumfang','Bier_Woche']);
+  const zeilen=alle.map(k=>{
+    const t=D.days[k]||{},w=D.weeks[weekKey(new Date(k+'T12:00:00'))]||{};
+    return [k,gesamt(k),score(k,KERN),score(k,BONUS)]
+      .concat(KERN.map(r=>t[r.id]?1:0),BONUS.map(r=>t[r.id]?1:0),[w.gewicht??'',w.bauch??'',w.bier??'']).join(';');});
+  datei('hoehenmeter-verlauf-'+iso(new Date())+'.csv','\ufeff'+[kopf.join(';')].concat(zeilen).join('\r\n'),'text/csv');
+  meldung(alle.length?'CSV mit '+alle.length+' Tagen erstellt.':'CSV erstellt – noch keine Tage erfasst.');
+}
+function importieren(f){
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const neu=JSON.parse(r.result);
+      if(!neu||typeof neu!=='object'||(!neu.days&&!neu.weeks))throw new Error('Format');
+      const tage=Object.keys(neu.days||{}).length;
+      if(!confirm('Sicherung mit '+tage+' erfassten Tagen einlesen? Die aktuellen Daten werden ersetzt.'))return;
+      uebernehmen(neu);sichern();render();gewichtung();
+      meldung('Sicherung eingelesen: '+tage+' Tage.');
+    }catch(e){meldung('Datei nicht lesbar. Erwartet wird eine Sicherung aus diesem Tracker (.json).',true);}
+  };
+  r.onerror=()=>meldung('Datei konnte nicht gelesen werden.',true);
+  r.readAsText(f);
+}
+function sicherungsHinweis(){
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  el('speicherort').textContent=SPEICHER==='local'
+    ?(standalone?'Als App installiert. Die Daten liegen im Speicher dieses Geräts und werden nirgendwohin übertragen.'
+      :'Läuft im Browser. Über „Teilen → Zum Home-Bildschirm" installieren – sonst kann Safari die Daten nach sieben Tagen ohne Nutzung löschen.')
+    :'Kein Speicher verfügbar – Eingaben gelten nur für diese Sitzung.';
+  const l=D.letzteSicherung?new Date(D.letzteSicherung):null;
+  el('letzteSicherung').textContent=l
+    ?'Letzte Sicherung: '+l.toLocaleDateString('de-DE')+(((Date.now()-l)/864e5)>30?' – über einen Monat her.':'')
+    :'Noch keine Sicherung erstellt.';
+  const b=el('banner'),alt=l?(Date.now()-l)/864e5:999,tage=Object.keys(D.days).length;
+  if(SPEICHER!=='local'){b.textContent='Kein dauerhafter Speicher. Eingaben gelten nur für diese Sitzung.';b.className='banner zeig';}
+  else if(!standalone&&tage>=3){b.textContent='Noch nicht installiert: Teilen-Symbol antippen und „Zum Home-Bildschirm" wählen. Erst dann sind deine Daten dauerhaft sicher.';b.className='banner zeig';}
+  else if(tage>=14&&alt>30){b.textContent='Deine letzte Sicherung ist über einen Monat alt. Unter „Daten sichern" einmal exportieren.';b.className='banner zeig';}
+  else b.className='banner';
+}
+
+el('prev').onclick=()=>{cur.setDate(cur.getDate()-1);render();};
+el('next').onclick=()=>{cur.setDate(cur.getDate()+1);render();};
+el('heute').onclick=()=>{cur=new Date();render();};
+el('bierPlus').onclick=()=>bier(1);
+el('bierMinus').onclick=()=>bier(-1);
+function bier(n){const wk=weekKey(cur);D.weeks[wk]=D.weeks[wk]||{};
+  D.weeks[wk].bier=Math.max(0,(D.weeks[wk].bier||0)+n);sichern();render();}
+function feld(id,f){el(id).addEventListener('change',()=>{
+  const wk=weekKey(cur);D.weeks[wk]=D.weeks[wk]||{};
+  const v=parseFloat(el(id).value);
+  if(isNaN(v))delete D.weeks[wk][f];else D.weeks[wk][f]=v;
+  sichern();render();el(id).blur();});}
+feld('gewicht','gewicht');feld('bauch','bauch');
+el('exportJson').onclick=exportJson;
+el('exportCsv').onclick=exportCsv;
+el('importBtn').onclick=()=>el('importFile').click();
+el('importFile').onchange=e=>{const f=e.target.files[0];if(f)importieren(f);e.target.value='';};
+el('reset').onclick=()=>{
+  if(!confirm('Wirklich alle Einträge und Gewichtungen löschen? Vorher sichern, falls du sie behalten willst.'))return;
+  D={version:1,days:{},weeks:{},weights:{},letzteSicherung:null};sichern();render();gewichtung();
+  meldung('Alle Daten gelöscht.');};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowLeft')el('prev').click();
+  if(e.key==='ArrowRight')el('next').click();});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&iso(cur)!==iso(new Date())&&!D.__manuell){cur=new Date();render();}});
+
+speicherWaehlen();laden();render();gewichtung();
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>{
+  navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});});
+</script>
+</body>
+</html>
