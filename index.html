@@ -61,6 +61,20 @@
   .profil{background:var(--fels-2);border:1px solid var(--linie);border-top:none;border-radius:0 0 8px 8px;padding:10px 4px 4px}
   .profil svg{display:block;width:100%;height:auto}
   .streak{font-size:11.5px;color:var(--firn-2);letter-spacing:.1em;text-transform:uppercase;text-align:right;padding:8px 4px 0}
+  .bierbox{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linie);
+           border:1px solid var(--linie);border-radius:8px;overflow:hidden;margin-top:14px}
+  .bierteil{background:var(--fels-2);padding:11px 13px}
+  .bierteil .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--firn-2)}
+  .bierteil .num{font-family:var(--disp);font-size:31px;line-height:1;font-variant-numeric:tabular-nums;margin-top:1px}
+  .bierteil .num.hat{color:var(--ocker)}
+  .couch{display:flex;gap:12px;align-items:flex-start;margin-top:14px;cursor:pointer;
+         -webkit-user-select:none;user-select:none;font-size:13.5px;color:var(--firn-2)}
+  .couch input{appearance:none;-webkit-appearance:none;width:24px;height:24px;flex:0 0 24px;margin:0;
+    border:1.5px solid var(--firn-2);border-radius:4px;background:transparent;position:relative}
+  .couch input:checked{background:var(--alarm);border-color:var(--alarm)}
+  .couch input:checked::after{content:"";position:absolute;left:7.5px;top:2.5px;width:6px;height:12px;
+    border:solid var(--fels);border-width:0 3px 3px 0;transform:rotate(42deg)}
+  .couch.an{color:var(--alarm)}
   h2.sec{font-size:14px;text-transform:uppercase;letter-spacing:.18em;color:var(--ocker);
          margin:26px 0 5px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   h2.sec span{font-family:var(--body);font-size:11.5px;letter-spacing:.02em;color:var(--firn-2);text-transform:none;text-align:right;flex:1}
@@ -177,6 +191,14 @@
 </div>
 <div class="streak" id="streak"></div>
 
+<div class="bierbox">
+  <div class="bierteil"><div class="lbl">Bier · letzte 7 Tage</div><div class="num" id="bier7">–</div></div>
+  <div class="bierteil"><div class="lbl">Bier · laufende Woche</div><div class="num" id="bierWo">–</div></div>
+</div>
+
+<h2 class="sec">Negativpunkte <span id="negLabel">ziehen vom Tag ab</span></h2>
+<div class="negliste" id="negativ"></div>
+
 <h2 class="sec">Schlaf <span>stärkster Einzelhebel</span></h2>
 <div class="schlaf">
   <div class="kopf">
@@ -194,17 +216,18 @@
     <div class="zeile"><span>Schlafende</span><span class="uhr" id="bisUhr">06:00</span></div>
     <input type="range" id="bisRegler" min="180" max="780" step="15" value="360" aria-label="Schlafende">
   </div>
-  <div class="leer" id="schlafLeer">Noch nicht erfasst – einen der Regler bewegen.</div>
+  <label class="couch" id="couchLabel">
+    <input type="checkbox" id="couch">
+    <span>Auf der Couch eingeschlafen und erst danach ins Bett – Schlaf zählt dann nicht.</span>
+  </label>
+  <div class="leer" id="schlafLeer">Noch nicht erfasst – zählt als volle Nacht. Bei kurzer Nacht die Regler bewegen.</div>
 </div>
 
-<h2 class="sec">Kernregeln <span>80 % des Tages</span></h2>
+<h2 class="sec">Kernregeln <span>Standard erfüllt – abwählen, was gefehlt hat</span></h2>
 <div class="liste" id="kern"></div>
 
-<h2 class="sec">Bonusregeln <span>an schlechten Tagen streichen</span></h2>
+<h2 class="sec">Bonusregeln <span>Kür – abwählen, was gefehlt hat</span></h2>
 <div class="liste" id="bonus"></div>
-
-<h2 class="sec">Negativpunkte <span id="negLabel">ziehen vom Tag ab</span></h2>
-<div class="negliste" id="negativ"></div>
 
 <h2 class="sec">Wochenwerte <span id="wochelabel"></span></h2>
 <div class="woche">
@@ -242,6 +265,7 @@
 
 <div class="status" id="status" role="status"></div>
 <div class="fuss">
+  Jeder Tag startet bei 100 %: Alle Regeln gelten als erfüllt, du wählst nur ab, was gefehlt hat.
   Der Tagesscore normiert sich auf die Regeln, die heute gelten: An Tagen ohne Krafttraining verteilt
   sich dessen Gewicht auf die übrigen Kernregeln. Negativpunkte werden erst danach abgezogen und können
   den Tag ins Minus ziehen – ebenso die fortlaufende Wochenwertung, die den Mittelwert der erfassten
@@ -283,7 +307,7 @@ const NEG=[
 ];
 const SCHLAF_VOLL=420, SCHLAF_NULL=360;   // ab 7 h volle Punktzahl, ab 6 h abwärts keine
 const KEY='hoehenmeter.v1';
-let D={version:2,days:{},weeks:{},weights:{},letzteSicherung:null};
+let D={version:3,days:{},weeks:{},weights:{},letzteSicherung:null};
 let cur=new Date();
 let SPEICHER='memory';
 const el=id=>document.getElementById(id);
@@ -333,10 +357,26 @@ function migrieren(o){
   });
   return o;
 }
+// Version 3 dreht die Logik um: Regeln gelten als erfüllt, gespeichert wird nur, was FEHLTE.
+// Altbestand hielt die erledigten Regeln fest – daraus wird das Gegenteil (o.off) berechnet.
+function migrierenLogik(o){
+  if((o.version||0)>=3)return o;
+  const ids=new Set([...KERN,...BONUS].filter(r=>r.typ!=='dauer').map(r=>r.id));
+  Object.keys(o.days||{}).forEach(k=>{
+    const t=o.days[k],d=new Date(k+'T12:00:00'),erledigt=new Set();
+    Object.keys(t).forEach(key=>{if(ids.has(key)){if(t[key])erledigt.add(key);delete t[key];}});
+    const off={};
+    [...KERN,...BONUS].forEach(r=>{if(r.typ==='dauer'||!gilt(r,d))return;if(!erledigt.has(r.id))off[r.id]=1;});
+    if(Object.keys(off).length)t.off=off;
+    t.seen=1;
+  });
+  return o;
+}
 function uebernehmen(o){
   if(!o||typeof o!=='object')throw new Error('Format');
   o=migrieren(o);
-  D={version:2,days:o.days||{},weeks:o.weeks||{},weights:o.weights||{},letzteSicherung:o.letzteSicherung||null};
+  o=migrierenLogik(o);
+  D={version:3,days:o.days||{},weeks:o.weeks||{},weights:o.weights||{},letzteSicherung:o.letzteSicherung||null};
 }
 
 // Schlaf: von in Minuten ab Mitternacht des Vortags (1080 = 18:00), bis am Folgetag (360 = 6:00).
@@ -345,14 +385,20 @@ const schlafDauer=o=>o?(o.bis+1440)-o.von:0;
 const uhr=m=>String(Math.floor((m%1440)/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const stunden=m=>{m=Math.max(0,m);return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')+' h';};
 // Anteil der Schlafpunkte: ab SCHLAF_VOLL voll, darunter linear bis SCHLAF_NULL auf null.
+// Umgekehrte Logik: ohne erfassten Kurzschlaf gilt die Nacht als voll (1). Wer auf der Couch
+// eingeschlafen ist (couchschlaf), bekommt gar keine Schlafpunkte.
 function schlafAnteil(s){
-  const d=schlafDauer(schlafDaten(s));
-  if(!d)return 0;
+  if((D.days[s]||{}).couchschlaf)return 0;
+  const o=schlafDaten(s);
+  if(!o)return 1;                    // nicht erfasst = volle Nacht angenommen
+  const d=schlafDauer(o);
   if(d>=SCHLAF_VOLL)return 1;
   if(d<=SCHLAF_NULL)return 0;
   return (d-SCHLAF_NULL)/(SCHLAF_VOLL-SCHLAF_NULL);
 }
-const anteil=(r,s)=>r.typ==='dauer'?schlafAnteil(s):((D.days[s]||{})[r.id]?1:0);
+// Umgekehrte Logik: eine Regel gilt als erfüllt, solange sie nicht in day.off als gefehlt vermerkt ist.
+const erfuellt=(r,s)=>!((D.days[s]||{}).off||{})[r.id];
+const anteil=(r,s)=>r.typ==='dauer'?schlafAnteil(s):(erfuellt(r,s)?1:0);
 
 function score(dateStr,list){
   const d=new Date(dateStr+'T12:00:00');
@@ -376,24 +422,44 @@ function wocheRollend(bis){
     if(erfasst(k)){summe+=gesamt(k);n++;}}
   return {wert:n?Math.round(summe/n):null,tage:n};
 }
+const bierAm=k=>((D.days[k]||{}).neg||{}).bier||0;
+// Bier im gleitenden Sieben-Tage-Fenster bis zum Stichtag.
+function bierSieben(bis){
+  let s=0;
+  for(let i=0;i<7;i++){const d=new Date(bis);d.setDate(d.getDate()-i);s+=bierAm(iso(d));}
+  return s;
+}
+// Bier in der laufenden Kalenderwoche des Stichtags.
+function bierWoche(bis){
+  const wk=weekKey(bis);
+  return Object.keys(D.days).reduce((s,k)=>s+(weekKey(new Date(k+'T12:00:00'))===wk?bierAm(k):0),0);
+}
 
 function ridge(){
   const pts=[],labels=['So','Mo','Di','Mi','Do','Fr','Sa'];
-  for(let i=6;i>=0;i--){const d=new Date(cur);d.setDate(d.getDate()-i);
-    pts.push({x:50+(6-i)*100,v:gesamt(iso(d)),l:labels[d.getDay()],heute:iso(d)===iso(cur)});}
+  for(let i=6;i>=0;i--){const d=new Date(cur);d.setDate(d.getDate()-i);const k=iso(d);
+    pts.push({x:50+(6-i)*100,v:erfasst(k)?gesamt(k):null,l:labels[d.getDay()],heute:k===iso(cur)});}
   // Skala −50 bis 100: die Talsohle bleibt sichtbar, ohne dass ein Ausreißer alles plattdrückt.
   const y=v=>158-(Math.max(-50,Math.min(100,v))+50)*.92;
   const null0=y(0);
-  const line=pts.map((p,i)=>(i?'L':'M')+p.x+' '+y(p.v)).join(' ');
+  const gemessen=pts.filter(p=>p.v!==null);
+  const line=gemessen.map((p,i)=>(i?'L':'M')+p.x+' '+y(p.v)).join(' ');
   let s='<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
     '<stop offset="0" stop-color="#69B8CC" stop-opacity=".38"/>'+
     '<stop offset="1" stop-color="#69B8CC" stop-opacity="0"/></linearGradient></defs>';
   s+='<line x1="20" y1="'+y(70)+'" x2="680" y2="'+y(70)+'" stroke="#9DB55E" stroke-dasharray="3 5" stroke-width="1" opacity=".55"/>';
   s+='<text x="680" y="'+(y(70)-6)+'" text-anchor="end" fill="#9DB55E" font-size="12" opacity=".8">Schneegrenze 70 %</text>';
-  s+='<path d="'+line+' L 650 '+null0+' L 50 '+null0+' Z" fill="url(#g)"/>';
-  s+='<path d="'+line+'" fill="none" stroke="#69B8CC" stroke-width="2.4" stroke-linejoin="round"/>';
+  if(gemessen.length>1){
+    s+='<path d="'+line+' L '+gemessen[gemessen.length-1].x+' '+null0+' L '+gemessen[0].x+' '+null0+' Z" fill="url(#g)"/>';
+    s+='<path d="'+line+'" fill="none" stroke="#69B8CC" stroke-width="2.4" stroke-linejoin="round"/>';
+  }
   s+='<line x1="20" y1="'+null0+'" x2="680" y2="'+null0+'" stroke="#334750"/>';
   pts.forEach(p=>{
+    if(p.v===null){
+      s+='<text x="'+p.x+'" y="'+null0+'" text-anchor="middle" fill="#334750" font-size="16">·</text>';
+      s+='<text x="'+p.x+'" y="177" text-anchor="middle" fill="'+(p.heute?'#D9903C':'#9DB2B9')+'" font-size="13">'+p.l+'</text>';
+      return;
+    }
     const minus=p.v<0,yy=y(p.v);
     s+='<circle cx="'+p.x+'" cy="'+yy+'" r="'+(p.heute?5.5:3.6)+'" fill="'+(p.heute?'#D9903C':minus?'#C9634B':'#69B8CC')+'"/>';
     s+='<text x="'+p.x+'" y="'+(yy-13)+'" text-anchor="middle" fill="'+(minus?'#C9634B':'#E9F0F1')+'" font-size="14">'+p.v+'</text>';
@@ -402,7 +468,7 @@ function ridge(){
 }
 function streak(){
   let n=0;const d=new Date(cur);
-  for(let i=0;i<400;i++){const k=iso(d);if(!D.days[k]||gesamt(k)<70)break;n++;d.setDate(d.getDate()-1);}
+  for(let i=0;i<400;i++){const k=iso(d);if(!erfasst(k)||gesamt(k)<70)break;n++;d.setDate(d.getDate()-1);}
   el('streak').textContent=n?'Serie: '+n+' Tag'+(n>1?'e':'')+' über 70 %':'Noch keine Serie über 70 %';
 }
 
@@ -410,11 +476,11 @@ function liste(node,list,day){
   node.innerHTML='';
   list.forEach(r=>{
     if(r.typ==='dauer')return;   // Schlaf hat einen eigenen Block mit Reglern
-    const an=gilt(r,cur),ok=!!(D.days[day]||{})[r.id];
+    const an=gilt(r,cur),ok=erfuellt(r,day);
     const lab=document.createElement('label');
     lab.className='regel'+(ok?' aktiv':'')+(an?'':' ruht');
     const inp=document.createElement('input');
-    inp.type='checkbox';inp.checked=ok;inp.disabled=!an;
+    inp.type='checkbox';inp.checked=an&&ok;inp.disabled=!an;
     const txt=document.createElement('div');txt.className='txt';
     const t=document.createElement('div');t.className='t';
     t.textContent=r.t+(an?'':' – heute kein Trainingstag');
@@ -423,29 +489,35 @@ function liste(node,list,day){
     const p=document.createElement('div');p.className='pts';p.textContent=W(r);
     lab.append(inp,txt,p);
     inp.addEventListener('change',e=>{
-      D.days[day]=D.days[day]||{};
-      if(e.target.checked)D.days[day][r.id]=1;else delete D.days[day][r.id];
-      if(!Object.keys(D.days[day]).length)delete D.days[day];
+      const t=D.days[day]=D.days[day]||{};
+      t.off=t.off||{};
+      if(e.target.checked)delete t.off[r.id];else t.off[r.id]=1;   // erfüllt = kein Eintrag, gefehlt = off
+      if(!Object.keys(t.off).length)delete t.off;
+      if(!Object.keys(t).length)delete D.days[day];
       sichern();render();});
     node.appendChild(lab);
   });
 }
 
 function schlafBlock(day){
-  const o=schlafDaten(day),hat=!!o;
+  const o=schlafDaten(day),hat=!!o,couch=!!(D.days[day]||{}).couchschlaf;
   const von=hat?o.von:1350,bis=hat?o.bis:360;
   el('vonRegler').value=von;el('bisRegler').value=bis;
   el('vonUhr').textContent=uhr(von);el('bisUhr').textContent=uhr(bis);
-  el('schlafLeer').style.display=hat?'none':'block';
+  el('couch').checked=couch;
+  el('couchLabel').className='couch'+(couch?' an':'');
+  el('schlafLeer').style.display=hat||couch?'none':'block';
   const d=(bis+1440)-von,box=el('schlafDauer');
-  box.textContent=hat?stunden(d):'–';
-  box.className='dauer'+(!hat||d>=SCHLAF_VOLL?'':d<=SCHLAF_NULL?' kurz':' knapp');
+  box.textContent=couch?'0 h':stunden(d);
+  box.className='dauer'+(couch?' kurz':d>=SCHLAF_VOLL?'':d<=SCHLAF_NULL?' kurz':' knapp');
   const p=Math.round(W(KERN[0])*schlafAnteil(day)*10)/10;
-  el('schlafHint').textContent=hat
-    ?p+' von '+W(KERN[0])+' Punkten'+(d>=SCHLAF_VOLL?' – ab sieben Stunden ist das Maximum erreicht.'
+  el('schlafHint').textContent=couch
+    ?'0 von '+W(KERN[0])+' Punkten – auf der Couch eingeschlafen, der Schlaf zählt nicht.'
+    :!hat
+    ?W(KERN[0])+' von '+W(KERN[0])+' Punkten – keine kurze Nacht erfasst, zählt als volle Nacht.'
+    :p+' von '+W(KERN[0])+' Punkten'+(d>=SCHLAF_VOLL?' – ab sieben Stunden ist das Maximum erreicht.'
       :d<=SCHLAF_NULL?' – sechs Stunden und weniger zählen nicht.'
-      :' – volle Punktzahl ab sieben Stunden.')
-    :'Ab sieben Stunden volle Punktzahl, unter sechs Stunden keine.';
+      :' – volle Punktzahl ab sieben Stunden.');
 }
 function negListe(day){
   const node=el('negativ'),n=(D.days[day]||{}).neg||{};
@@ -484,7 +556,9 @@ function negSetzen(day,id,n){
 }
 
 function render(){
-  const day=iso(cur),wk=weekKey(cur);
+  const day=iso(cur),wk=weekKey(cur),heuteK=iso(new Date());
+  // Umgekehrte Logik: der laufende Tag gilt automatisch als erfasst und startet bei 100 %.
+  if(day===heuteK){const t=D.days[heuteK]=D.days[heuteK]||{};if(!t.seen){t.seen=1;sichern();}}
   el('datum').textContent=cur.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
   const g=gesamt(day),a=abzug(day);
   const num=el('sGesamt');num.textContent=g+'%';num.className='num'+(g<0?' minus':'');
@@ -496,6 +570,9 @@ function render(){
   el('sKern').textContent=score(day,KERN)+'%';
   el('sBonus').textContent=score(day,BONUS)+'%';
   el('hKern').textContent=gilt(KERN[1],cur)?'Krafttag':'ohne Krafttraining';
+  const b7=bierSieben(cur),bw=bierWoche(cur),bn7=el('bier7'),bnw=el('bierWo');
+  bn7.textContent=b7;bn7.className='num'+(b7?' hat':'');
+  bnw.textContent=bw;bnw.className='num'+(bw?' hat':'');
   schlafBlock(day);
   liste(el('kern'),KERN,day);liste(el('bonus'),BONUS,day);negListe(day);
   el('wochelabel').textContent=wk;
@@ -548,15 +625,15 @@ function exportJson(){
 function exportCsv(){
   const alle=Object.keys(D.days).sort();
   const kopf=['Datum','Gesamt','Woche_fortlaufend','Basis','Kern','Bonus','Abzug',
-    'Schlaf_von','Schlaf_bis','Schlaf_min']
+    'Schlaf_von','Schlaf_bis','Schlaf_min','Schlaf_couch']
     .concat(KERN.filter(r=>r.typ!=='dauer').map(r=>r.id),BONUS.map(r=>r.id),
       NEG.map(r=>'neg_'+r.id),['Gewicht','Bauchumfang']);
   const zeilen=alle.map(k=>{
     const t=D.days[k]||{},n=t.neg||{},s=t.schlaf||null;
     const w=D.weeks[weekKey(new Date(k+'T12:00:00'))]||{};
     return [k,gesamt(k),wocheRollend(new Date(k+'T12:00:00')).wert??'',basis(k),score(k,KERN),score(k,BONUS),abzug(k),
-      s?uhr(s.von):'',s?uhr(s.bis):'',s?schlafDauer(s):'']
-      .concat(KERN.filter(r=>r.typ!=='dauer').map(r=>t[r.id]?1:0),BONUS.map(r=>t[r.id]?1:0),
+      s?uhr(s.von):'',s?uhr(s.bis):'',s?schlafDauer(s):'',t.couchschlaf?1:0]
+      .concat(KERN.filter(r=>r.typ!=='dauer').map(r=>erfuellt(r,k)?1:0),BONUS.map(r=>erfuellt(r,k)?1:0),
         NEG.map(r=>n[r.id]||0),[w.gewicht??'',w.bauch??'']).join(';');});
   datei('hoehenmeter-verlauf-'+iso(new Date())+'.csv','\ufeff'+[kopf.join(';')].concat(zeilen).join('\r\n'),'text/csv');
   meldung(alle.length?'CSV mit '+alle.length+' Tagen erstellt.':'CSV erstellt – noch keine Tage erfasst.');
@@ -611,7 +688,7 @@ function schlafAnzeige(bewegt){
   const von=+el('vonRegler').value,bis=+el('bisRegler').value,d=(bis+1440)-von;
   el('vonUhr').textContent=uhr(von);el('bisUhr').textContent=uhr(bis);
   const box=el('schlafDauer');box.textContent=stunden(d);
-  box.className='dauer'+(d>=SCHLAF_VOLL?'':d<=SCHLAF_NULL?' kurz':' knapp');
+  box.className='dauer'+(el('couch').checked?' kurz':d>=SCHLAF_VOLL?'':d<=SCHLAF_NULL?' kurz':' knapp');
 }
 function schlafRegler(bewegt){
   entkreuzen(bewegt);
@@ -623,6 +700,12 @@ function schlafRegler(bewegt){
 [['vonRegler','von'],['bisRegler','bis']].forEach(([id,seite])=>{
   el(id).addEventListener('input',()=>schlafAnzeige(seite));
   el(id).addEventListener('change',()=>schlafRegler(seite));
+});
+el('couch').addEventListener('change',()=>{
+  const k=iso(cur),t=D.days[k]=D.days[k]||{};
+  if(el('couch').checked)t.couchschlaf=1;else delete t.couchschlaf;
+  if(!Object.keys(t).length)delete D.days[k];
+  sichern();render();
 });
 function feld(id,f){el(id).addEventListener('change',()=>{
   const wk=weekKey(cur);D.weeks[wk]=D.weeks[wk]||{};
@@ -636,7 +719,7 @@ el('importBtn').onclick=()=>el('importFile').click();
 el('importFile').onchange=e=>{const f=e.target.files[0];if(f)importieren(f);e.target.value='';};
 el('reset').onclick=()=>{
   if(!confirm('Wirklich alle Einträge und Gewichtungen löschen? Vorher sichern, falls du sie behalten willst.'))return;
-  D={version:2,days:{},weeks:{},weights:{},letzteSicherung:null};sichern();render();gewichtung();
+  D={version:3,days:{},weeks:{},weights:{},letzteSicherung:null};sichern();render();gewichtung();
   meldung('Alle Daten gelöscht.');};
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT')return;

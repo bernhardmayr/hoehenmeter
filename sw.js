@@ -1,4 +1,4 @@
-const CACHE = 'hoehenmeter-v2';
+const CACHE = 'hoehenmeter-v3';
 const DATEIEN = [
   './',
   './index.html',
