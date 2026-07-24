@@ -42,10 +42,21 @@ in `index.html`. Gewichte lassen sich auch zur Laufzeit in der App ändern.
 
 ## Bewertung
 
+**Umgekehrte Logik.** Jeder Tag startet bei 100 %: Alle Kern- und Bonusregeln gelten als erfüllt.
+Man hakt nicht ab, was man geschafft hat, sondern wählt ab, was gefehlt hat. Der laufende Tag wird
+automatisch als erfasst geführt; vergangene Tage erscheinen im Profil nur, wenn dort etwas eingetragen
+wurde.
+
 **Schlaf** wird über zwei Regler erfasst, nicht als Häkchen. Ab sieben Stunden gibt es die volle
 Punktzahl, darunter sinkt sie linear bis auf null bei sechs Stunden – 6:30 ergibt also die Hälfte,
 sechs Stunden und weniger gar nichts. Die Regler dürfen sich nicht kreuzen; der jeweils andere
-schiebt nach.
+schiebt nach. Passend zur umgekehrten Logik gilt eine nicht erfasste Nacht als volle Nacht – nur eine
+bewusst eingestellte kurze Nacht zieht Punkte ab. Das Häkchen **„Auf der Couch eingeschlafen"** setzt
+die Schlafpunkte komplett auf null: Wer erst auf der Couch einschläft und dann ins Bett geht, bekommt
+für den Schlaf gar nichts.
+
+**Bier** wird zusätzlich oben als Summe angezeigt – einmal über die letzten sieben Tage (gleitend) und
+einmal für die laufende Kalenderwoche.
 
 **Negativpunkte** stammen aus `Checklist.xlsx` – die dort als Verzicht geführten Zeilen (Alkohol,
 Süßigkeiten, Zwischenmahlzeiten, Weißmehl, Wurst). Sie werden je Tag als Einheiten gezählt und
